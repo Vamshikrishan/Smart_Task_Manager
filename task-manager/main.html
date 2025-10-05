@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Task Manager</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <img src="logo.png" alt="Logo" class="app-logo">
+    <h1>Smart Task Manager</h1>
+    <p>Plan. Prioritize. Perform. Stay productive every day 🚀</p>
+
+    <img src="preview.jpg" alt="Task Manager Preview" class="preview-img">
+
+    <p>
+      Explore more projects on 
+      <a href="https://github.com/VamshiKrishna" target="_blank">my GitHub</a>.
+    </p>
+
+    <div class="task-input">
+      <input type="text" id="taskName" placeholder="Enter task name">
+      <input type="date" id="taskDeadline">
+      <select id="taskPriority">
+        <option value="">Priority</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+      <button id="addTaskBtn">Add Task</button>
+    </div>
+
+    <p id="errorMsg" class="error-msg"></p>
+    <p id="successMsg" class="success-msg"></p>
+
+    <ul id="taskList"></ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
