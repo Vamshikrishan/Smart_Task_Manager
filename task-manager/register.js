@@ -10,43 +10,51 @@ form.addEventListener("submit", (e) => {
   const password = document.getElementById("regPassword").value.trim();
   const confirm = document.getElementById("regConfirmPassword").value.trim();
 
-  // Basic validation
   if (!username || !email || !password || !confirm) {
-    errorMsg.textContent = "⚠ Please fill in all fields!";
-    errorMsg.classList.add("visible", "shake");
-    setTimeout(() => errorMsg.classList.remove("shake"), 400);
+    showError("⚠ Please fill in all fields!");
     return;
   }
 
   const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
   if (!email.match(emailPattern)) {
-    errorMsg.textContent = "⚠ Please enter a valid email address!";
-    errorMsg.classList.add("visible", "shake");
+    showError("⚠ Please enter a valid email address!");
     return;
   }
 
   if (password.length < 4) {
-    errorMsg.textContent = "⚠ Password must be at least 4 characters!";
-    errorMsg.classList.add("visible", "shake");
+    showError("⚠ Password must be at least 4 characters!");
     return;
   }
 
   if (password !== confirm) {
-    errorMsg.textContent = "⚠ Passwords do not match!";
-    errorMsg.classList.add("visible", "shake");
+    showError("⚠ Passwords do not match!");
     return;
   }
 
-  // Store data (temporary localStorage demo)
-  localStorage.setItem("taskUser", JSON.stringify({ username, email, password }));
+  // Retrieve existing users
+  const users = JSON.parse(localStorage.getItem("taskUsers") || "[]");
 
-  // Show success message
+  // Check duplicate username or email
+  if (users.some(u => u.username === username || u.email === email)) {
+    showError("⚠ Username or Email already exists!");
+    return;
+  }
+
+  // Add new user
+  users.push({ username, email, password });
+  localStorage.setItem("taskUsers", JSON.stringify(users));
+
   errorMsg.textContent = "";
-  successMsg.textContent = "✅ Registered successfully! Redirecting...";
+  successMsg.textContent = "✅ Registered successfully! Redirecting to login...";
   successMsg.classList.add("visible");
 
-  // Redirect to login after short delay
   setTimeout(() => {
     window.location.href = "index.html";
   }, 1500);
 });
+
+function showError(msg) {
+  errorMsg.textContent = msg;
+  errorMsg.classList.add("visible", "shake");
+  setTimeout(() => errorMsg.classList.remove("shake"), 400);
+}
