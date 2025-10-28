@@ -1,6 +1,7 @@
-/* Smart Task Manager - Task 3
+/* Smart Task Manager - Task 4
    Features: add, validate, persist, complete, delete,
-             filter, sort, progress bar, quote API
+             filter, sort, progress bar, quote API,
+             search, edit, export
 */
 
 // DOM elements
@@ -26,8 +27,11 @@ const quoteText = document.getElementById('quoteText');
 const quoteAuthor = document.getElementById('quoteAuthor');
 const newQuoteBtn = document.getElementById('newQuoteBtn');
 
+const searchTask = document.getElementById("searchTask");
+const exportBtn = document.getElementById("exportBtn");
+
 // localStorage key
-const STORAGE_KEY = 'smartTasks_v1';
+const STORAGE_KEY = 'smartTasks_v2';
 
 // in-memory tasks array
 let tasks = [];
@@ -36,33 +40,24 @@ let tasks = [];
 function showError(msg) {
   errorMsg.textContent = msg;
   errorMsg.classList.add('visible', 'shake');
-  setTimeout(()=> errorMsg.classList.remove('shake'), 450);
+  setTimeout(() => errorMsg.classList.remove('shake'), 450);
 }
 function showSuccess(msg) {
   successMsg.textContent = msg;
   successMsg.classList.add('visible');
-  setTimeout(()=> successMsg.classList.remove('visible'), 1400);
-}
-function clearMessages() {
-  errorMsg.textContent = ''; errorMsg.classList.remove('visible');
-  successMsg.textContent = ''; successMsg.classList.remove('visible');
+  setTimeout(() => successMsg.classList.remove('visible'), 1400);
 }
 
 function saveTasks() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 }
+
 function loadTasks() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw);
-  } catch(e) {
-    return [];
-  }
+  const data = localStorage.getItem(STORAGE_KEY);
+  return data ? JSON.parse(data) : [];
 }
 
 function priorityValue(p) {
-  // For sorting: High(3) > Medium(2) > Low(1)
   if (p === 'High') return 3;
   if (p === 'Medium') return 2;
   return 1;
@@ -70,9 +65,15 @@ function priorityValue(p) {
 
 /* ---------- Rendering ---------- */
 function renderTasks() {
-  // apply filters
-  let filtered = tasks.slice();
+  let filtered = tasks.slice(); // create shallow copy first ✅
 
+  // ✅ Apply search filter (must come AFTER the line above)
+  const search = searchTask.value.trim().toLowerCase();
+  if (search) {
+    filtered = filtered.filter(t => t.name.toLowerCase().includes(search));
+  }
+
+  // Apply filters
   const status = statusFilter.value;
   const pfilter = priorityFilter.value;
   if (status !== 'all') {
@@ -80,19 +81,19 @@ function renderTasks() {
   }
   if (pfilter !== 'all') filtered = filtered.filter(t => t.priority === pfilter);
 
-  // apply sort
+  // Apply sort
   const s = sortBy.value;
   if (s === 'deadline-asc') {
-    filtered.sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
+    filtered.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
   } else if (s === 'deadline-desc') {
-    filtered.sort((a,b) => new Date(b.deadline) - new Date(a.deadline));
+    filtered.sort((a, b) => new Date(b.deadline) - new Date(a.deadline));
   } else if (s === 'priority-desc') {
-    filtered.sort((a,b) => priorityValue(b.priority) - priorityValue(a.priority));
+    filtered.sort((a, b) => priorityValue(b.priority) - priorityValue(a.priority));
   } else if (s === 'priority-asc') {
-    filtered.sort((a,b) => priorityValue(a.priority) - priorityValue(b.priority));
+    filtered.sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority));
   }
 
-  // render
+  // Render
   taskListEl.innerHTML = '';
   if (filtered.length === 0) {
     const li = document.createElement('li');
@@ -122,7 +123,8 @@ function renderTasks() {
 
     // badge
     const badge = document.createElement('div');
-    badge.className = 'badge ' + (t.priority === 'High' ? 'badge-high' : (t.priority === 'Medium' ? 'badge-medium' : 'badge-low'));
+    badge.className = 'badge ' + (t.priority === 'High' ? 'badge-high' :
+                     (t.priority === 'Medium' ? 'badge-medium' : 'badge-low'));
     badge.textContent = t.priority;
 
     // buttons
@@ -133,6 +135,23 @@ function renderTasks() {
     completeBtn.className = 'action-btn complete-btn';
     completeBtn.textContent = t.completed ? 'Undo' : '✅';
     completeBtn.title = 'Mark complete';
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✎';
+    editBtn.className = 'action-btn edit-btn';
+    editBtn.addEventListener('click', () => {
+      const newName = prompt('Edit task name:', t.name);
+      const newDeadline = prompt('Edit deadline (YYYY-MM-DD):', t.deadline);
+      const newPriority = prompt('Edit priority (High/Medium/Low):', t.priority);
+      if (newName && newDeadline && newPriority) {
+        t.name = newName;
+        t.deadline = newDeadline;
+        t.priority = newPriority;
+        saveTasks();
+        renderTasks();
+        showSuccess('Task updated successfully!');
+      }
+    });
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'action-btn delete-btn';
@@ -147,7 +166,6 @@ function renderTasks() {
     });
 
     deleteBtn.addEventListener('click', () => {
-      // smooth remove animation (fade)
       const idx = tasks.findIndex(x => x.id === t.id);
       if (idx > -1) {
         tasks.splice(idx, 1);
@@ -158,6 +176,7 @@ function renderTasks() {
     });
 
     actions.appendChild(badge);
+    actions.appendChild(editBtn);
     actions.appendChild(completeBtn);
     actions.appendChild(deleteBtn);
 
@@ -168,6 +187,7 @@ function renderTasks() {
 
   updateProgress();
 }
+
 
 /* ---------- Progress ---------- */
 function updateProgress() {
@@ -183,49 +203,30 @@ function updateProgress() {
 }
 
 /* ---------- Task operations ---------- */
-taskForm.addEventListener('submit', (e) => {
+taskForm.addEventListener('submit', e => {
   e.preventDefault();
-  clearMessages();
-
   const name = taskName.value.trim();
   const deadline = taskDeadline.value;
   const priority = taskPriority.value;
 
   if (!name || !deadline || !priority) {
-    showError('⚠ Please fill all fields');
-    return;
-  }
-  const dd = new Date(deadline);
-  const today = new Date();
-  // set time portion of today to 00:00 to allow current day as valid if desired; here require future (strict)
-  today.setHours(0,0,0,0);
-  if (dd < today) {
-    showError('⚠ Deadline must be today or a future date');
+    showError('Please fill all fields');
     return;
   }
 
-  // Prevent duplicate tasks (same name + deadline)
-  const duplicate = tasks.some(t => t.name.toLowerCase() === name.toLowerCase() && t.deadline === deadline);
-  if (duplicate) {
-    showError('⚠ Task with same name and deadline already exists');
-    return;
-  }
-
-  // create task object
-  const task = {
-    id: Date.now().toString(),
+  const newTask = {
+    id: Date.now(),
     name,
     deadline,
     priority,
-    completed: false,
-    createdAt: new Date().toISOString()
+    completed: false
   };
-  tasks.push(task);
+
+  tasks.push(newTask);
   saveTasks();
   renderTasks();
-  showSuccess('✅ Task added successfully');
+  showSuccess('Task added successfully!');
 
-  // clear inputs
   taskName.value = '';
   taskDeadline.value = '';
   taskPriority.value = '';
@@ -235,6 +236,7 @@ taskForm.addEventListener('submit', (e) => {
 statusFilter.addEventListener('change', renderTasks);
 priorityFilter.addEventListener('change', renderTasks);
 sortBy.addEventListener('change', renderTasks);
+searchTask.addEventListener('input', renderTasks);
 
 /* ---------- Quotes ---------- */
 const localQuotes = [
@@ -252,9 +254,8 @@ const localQuotes = [
 let usedQuotes = new Set();
 
 async function fetchQuote() {
-  // First try API, then fallback to local list
   try {
-    const res = await fetch("https://api.quotable.io/random");
+    const res = await fetch('https://api.quotable.io/random');
     if (res.ok) {
       const data = await res.json();
       displayQuote(data.content, data.author);
@@ -262,7 +263,6 @@ async function fetchQuote() {
     }
   } catch {}
 
-  // fallback: choose local random that’s not repeated yet
   if (usedQuotes.size === localQuotes.length) usedQuotes.clear();
   let idx;
   do { idx = Math.floor(Math.random() * localQuotes.length); }
@@ -277,14 +277,36 @@ function displayQuote(text, author) {
   quoteAuthor.textContent = `— ${author}`;
 }
 
-newQuoteBtn.addEventListener("click", fetchQuote);
+newQuoteBtn.addEventListener('click', fetchQuote);
 
+/* ---------- Export CSV ---------- */
+exportBtn.addEventListener('click', () => {
+  if (tasks.length === 0) {
+    showError('⚠ No tasks to export!');
+    return;
+  }
+  let csv = 'Task Name,Deadline,Priority,Completed\n';
+  tasks.forEach(t => {
+    csv += `${t.name},${t.deadline},${t.priority},${t.completed ? 'Yes' : 'No'}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'SmartTaskManager_Tasks.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showSuccess('✅ Tasks exported successfully!');
+});
 
 /* ---------- Initialization ---------- */
 function init() {
   tasks = loadTasks();
-  // If no tasks in storage, keep tasks empty array
   renderTasks();
   fetchQuote();
 }
-init();
+searchTask.addEventListener('input', renderTasks);
+window.addEventListener('DOMContentLoaded', init);

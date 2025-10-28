@@ -380,6 +380,30 @@ select:focus {
   border: 2px solid #00e676;
 }
 
+/* ---------- SEARCH + EXPORT BAR ---------- */
+.search-export {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#searchTask {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+#searchTask::placeholder {
+  color: #ddd;
+}
+
 /* small screens adjustments */
 @media (max-width: 880px){
   .top-row{ flex-direction: column; }
