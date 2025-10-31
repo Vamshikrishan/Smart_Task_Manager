@@ -30,6 +30,13 @@ const newQuoteBtn = document.getElementById('newQuoteBtn');
 const searchTask = document.getElementById("searchTask");
 const exportBtn = document.getElementById("exportBtn");
 
+const totalTasksEl = document.getElementById("totalTasks");
+const completedTasksEl = document.getElementById("completedTasks");
+const pendingTasksEl = document.getElementById("pendingTasks");
+const nextDueEl = document.getElementById("nextDue");
+const themeSwitch = document.getElementById("themeSwitch");
+const themeLabel = document.getElementById("themeLabel");
+
 // localStorage key
 const STORAGE_KEY = 'smartTasks_v2';
 
@@ -37,11 +44,18 @@ const STORAGE_KEY = 'smartTasks_v2';
 let tasks = [];
 
 /* ---------- Helpers ---------- */
-function showError(msg) {
-  errorMsg.textContent = msg;
-  errorMsg.classList.add('visible', 'shake');
-  setTimeout(() => errorMsg.classList.remove('shake'), 450);
+function showSuccess(msg) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add("show"), 100);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
 }
+
 function showSuccess(msg) {
   successMsg.textContent = msg;
   successMsg.classList.add('visible');
@@ -147,8 +161,7 @@ function renderTasks() {
         t.name = newName;
         t.deadline = newDeadline;
         t.priority = newPriority;
-        saveTasks();
-        renderTasks();
+        refreshAll();
         showSuccess('Task updated successfully!');
       }
     });
@@ -160,8 +173,7 @@ function renderTasks() {
 
     completeBtn.addEventListener('click', () => {
       t.completed = !t.completed;
-      saveTasks();
-      renderTasks();
+      refreshAll();
       showSuccess(t.completed ? 'Task marked completed' : 'Marked as pending');
     });
 
@@ -169,8 +181,7 @@ function renderTasks() {
       const idx = tasks.findIndex(x => x.id === t.id);
       if (idx > -1) {
         tasks.splice(idx, 1);
-        saveTasks();
-        renderTasks();
+        refreshAll();
         showSuccess('Task deleted');
       }
     });
@@ -186,8 +197,8 @@ function renderTasks() {
   });
 
   updateProgress();
+  updateDashboard();
 }
-
 
 /* ---------- Progress ---------- */
 function updateProgress() {
@@ -201,6 +212,28 @@ function updateProgress() {
   progressBar.style.width = pct + '%';
   progressText.textContent = pct + '%';
 }
+function refreshAll() {
+  saveTasks();
+  renderTasks();
+  updateDashboard();
+}
+/* ---------- Dashboard Update ---------- */
+function updateDashboard() {
+  const total = tasks.length;
+  const completed = tasks.filter(t => t.completed).length;
+  const pending = total - completed;
+
+  totalTasksEl.textContent = total;
+  completedTasksEl.textContent = completed;
+  pendingTasksEl.textContent = pending;
+
+  // Find nearest due date
+  const upcoming = tasks
+    .filter(t => !t.completed)
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))[0];
+  nextDueEl.textContent = upcoming ? upcoming.deadline : "–";
+}
+updateDashboard();
 
 /* ---------- Task operations ---------- */
 taskForm.addEventListener('submit', e => {
@@ -223,8 +256,7 @@ taskForm.addEventListener('submit', e => {
   };
 
   tasks.push(newTask);
-  saveTasks();
-  renderTasks();
+  refreshAll();
   showSuccess('Task added successfully!');
 
   taskName.value = '';
@@ -306,7 +338,27 @@ exportBtn.addEventListener('click', () => {
 function init() {
   tasks = loadTasks();
   renderTasks();
+  updateDashboard();
   fetchQuote();
 }
 searchTask.addEventListener('input', renderTasks);
 window.addEventListener('DOMContentLoaded', init);
+
+// ---------- THEME TOGGLE ----------
+themeSwitch.addEventListener("change", () => {
+  document.body.classList.toggle("dark", themeSwitch.checked);
+  themeLabel.textContent = themeSwitch.checked ? "🌙 Dark Mode" : "🌞 Light Mode";
+  localStorage.setItem("themeMode", themeSwitch.checked ? "dark" : "light");
+});
+
+// Load saved theme
+window.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("themeMode");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark");
+    themeSwitch.checked = true;
+    themeLabel.textContent = "🌙 Dark Mode";
+  } else {
+    themeLabel.textContent = "🌞 Light Mode";
+  }
+});

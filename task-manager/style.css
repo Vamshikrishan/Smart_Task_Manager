@@ -404,6 +404,157 @@ select:focus {
   color: #ddd;
 }
 
+/* ---------- DASHBOARD SUMMARY ---------- */
+.dashboard-summary {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.summary-card {
+  flex: 1;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 15px;
+  padding: 10px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+.summary-card:hover {
+  transform: scale(1.05);
+}
+
+.summary-card h3 {
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: #eee;
+}
+
+.summary-card p {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* ---------- THEME TOGGLE ---------- */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: rgba(255,255,255,0.3);
+  border-radius: 34px;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #00e676;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* ---------- DARK MODE ---------- */
+body.dark {
+  background: linear-gradient(135deg, #141e30, #243b55);
+}
+
+body.dark .container {
+  background: rgba(255,255,255,0.07);
+}
+
+body.dark .summary-card {
+  background: rgba(255,255,255,0.15);
+}
+
+body.dark h1, body.dark p, body.dark label {
+  color: #fff;
+}
+
+.toast {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: linear-gradient(135deg, #00e676, #00c853);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- TASK META TEXT FIX ---------- */
+
+/* Default (light mode): dark gray text for readability */
+.task-meta {
+  color: #000 !important;
+  font-weight: 500;
+}
+
+/* Dark mode: light gray text for visibility */
+body.dark .task-meta {
+  color: #ddd;
+}
+
+/* ---------- THEME LABEL VISIBILITY FIX ---------- */
+#themeLabel {
+  font-weight: 600;
+  color: #fff; /* Always white by default for gradient background */
+  transition: color 0.3s ease;
+}
+
+body.dark #themeLabel {
+  color: #fff; /* Keep white in dark mode too */
+}
+
+.theme-toggle {
+  transition: color 0.3s ease;
+}
+
 /* small screens adjustments */
 @media (max-width: 880px){
   .top-row{ flex-direction: column; }
