@@ -225,7 +225,7 @@ You are free to modify, improve, and use it for educational or portfolio purpose
 
 ## 🖼 Preview
 
-![Smart Task Manager Preview](preview.jpg)
+![Smart Task Manager Preview](Screenshot 2025-11-08 224458.png)
 
 A clean, modern, and fully responsive web app to manage tasks effectively — built with pure HTML, CSS, and JavaScript.
 
