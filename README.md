@@ -212,9 +212,13 @@ This project was created as part of the **ApexPlanet Web Development Internship 
 You are free to modify, improve, and use it for educational or portfolio purposes.
 
 **Author:** P. Vamshi Krishna
+
 **Email:** [vamship250106@gmail.com](vamship250106@gmail.com)
+
 **LinkedIn:** [www.linkedin.com/in/vamshi-krishna-a4ba0a350](www.linkedin.com/in/vamshi-krishna-a4ba0a350)
+
 **GitHub Repository:** [[Smart Task Manager](https://github.com/Vamshikrishan/Smart_Task_Manager)]
+
 **Live Link** [https://celebrated-bienenstitch-c8976e.netlify.app/](https://celebrated-bienenstitch-c8976e.netlify.app/)
 
 ---
